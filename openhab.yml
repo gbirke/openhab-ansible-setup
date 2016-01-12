@@ -1,0 +1,38 @@
+---
+- hosts: all
+  vars:
+    openhab_install_dir: /opt/openhab
+    openhab_download_dir: ~/downloads
+    openhab_addons_dir: ~/openab_addons
+    openhab_base_url: "https://bintray.com/artifact/download/openhab/bin"
+    openhab_version: 1.8.0
+    openhab_runtime_file: distribution-{{ openhab_version }}-runtime.zip
+    openhab_addons_file: distribution-{{ openhab_version }}-addons.zip
+    openhab_install_addons:
+      - binding.http
+      - binding.ntp
+      - persistence.exec
+      - persistence.logging
+      - persistence.rrd4j
+  tasks:
+    - name: Create download dir
+      file: dest={{ openhab_download_dir }} state=directory
+    - name: Create addons dir
+      file: dest={{ openhab_addons_dir }} state=directory
+    - name: Create openHAB dir
+      file: dest={{ openhab_install_dir }} state=directory mode=755
+    - name: Download openHAB runtime
+      get_url: url={{ openhab_base_url }}/{{ openhab_runtime_file }} dest={{ openhab_download_dir }}/{{ openhab_runtime_file }}
+    - name: Download openHAB addons
+      get_url: url={{ openhab_base_url }}/{{ openhab_addons_file }} dest={{ openhab_download_dir }}/{{ openhab_addons_file }}
+    - name: Extract openHAB runtime
+      unarchive: src={{ openhab_download_dir }}/{{ openhab_runtime_file }} dest={{ openhab_install_dir }} copy=no
+    - name: Extract openHAB addons
+      unarchive: src={{ openhab_download_dir }}/{{ openhab_addons_file }} dest={{ openhab_addons_dir }} copy=no
+    - name: Install addons
+      command: cp {{ openhab_addons_dir }}/org.openhab.{{item}}-{{openhab_version}}.jar {{ openhab_install_dir }}/addons/org.openhab.{{item}}-{{openhab_version}}.jar
+      with_items: "{{ openhab_install_addons }}"
+    # TODO Create openHAB user
+    # TODO Install startup item
+    # TODO Clone openhab configuration Git repository
+    # TODO openhab_install_addons contains binding.homematic, include homegear.yml

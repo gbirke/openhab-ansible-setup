@@ -1,0 +1,19 @@
+---
+- hosts: all
+  # TODO install role only on vagrant machine, on raspbian use apt
+  roles: 
+    - williamyeh.oracle-java
+  vars:
+    - java_version: 8
+    - java_remove_download: false
+  tasks:
+    - name: Update apt
+      apt: update_cache=yes cache_valid_time=86400
+    - name: Install packages
+      apt: pkg={{item}} state=installed
+      with_items:
+        - git
+        - vim
+        - unzip
+    # TODO: Install nginx for proxying?
+

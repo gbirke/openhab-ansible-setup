@@ -1,0 +1,25 @@
+---
+- hosts: all  
+  tasks:
+    - name: Install homegear dependencies
+      apt: pkg={{item}} state=present
+      with_items:
+        - apt-transport-https
+        - libsqlite3-0
+        - libreadline6
+        - libgcrypt20
+        - libgnutlsxx28
+        - unzip
+        - p7zip-full
+        - libxml2-utils
+        - patch
+        - perl
+    - name: Add homegear repo key
+      apt_key: url=https://homegear.eu/packages/Release.key state=present
+    - name: add homegear repo
+      apt_repository: "repo='{{ homegear_repo }}' state=present"
+    - name: add homegear
+      apt: pkg=homegear update_cache=yes
+    # TODO backup default config file and add new file from template
+
+
