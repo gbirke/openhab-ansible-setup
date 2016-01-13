@@ -15,5 +15,6 @@
         - git
         - vim
         - unzip
+        - ntp
     # TODO: Install nginx for proxying?
 
