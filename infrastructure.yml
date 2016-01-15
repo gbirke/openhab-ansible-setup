@@ -1,11 +1,7 @@
 ---
-# TODO Make install dependent on machine architecture: vagrant machine vs raspbian 
-- hosts: all
-  roles: 
-    - williamyeh.oracle-java # This is vagrant-specific
-  vars:
-    - java_version: 8
-    - java_remove_download: false
+- name: General infrastructure
+  hosts: all
+  become: true
   tasks:
     - name: Update apt
       apt: update_cache=yes cache_valid_time=86400
@@ -17,8 +13,18 @@
         - unzip
         - ntp
         - samba
-    # TODO: set hostname
-    # TODO: Set timezone
+
+
+# Here comes the Vagrant-Specific part
+
+- name: Install Java and set timezone
+  hosts: vagrant
+  become: true
+  roles:
+    -  williamyeh.oracle-java
+  tasks:
+    - name: Set timezone
+      copy: dest=/etc/timezone content={{ timezone }}
 
 - include: tasks/install_influxdb_debian.yml
 

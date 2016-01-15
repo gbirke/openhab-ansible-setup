@@ -1,5 +1,7 @@
 ---
-- hosts: all
+- hosts: vagrant
+  name: Install InfluxDB
+  become: true
   vars: 
     influxdb_download_dir: /home/vagrant/downloads
     influxdb_package_name: influxdb
@@ -12,8 +14,11 @@
       changed_when: influxdb_check_deb.rc == 1
     - name: Create download dir
       file: name={{ influxdb_download_dir }} state=directory
+      when: influxdb_check_deb.rc == 1
     - name: Download influxdb deb
       get_url: url={{ influxdb_package_url }} dest={{ influxdb_download_dir }}/{{ influxdb_package_url|basename }}
+      when: influxdb_check_deb.rc == 1
     - name: Install influxdb
       apt: deb={{ influxdb_download_dir }}/{{ influxdb_package_url|basename }} state=present
       become: true
+      when: influxdb_check_deb.rc == 1

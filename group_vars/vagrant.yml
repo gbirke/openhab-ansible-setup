@@ -1,0 +1,6 @@
+---
+# For the Java role, not needed in raspberry pi
+java_version: 8
+java_remove_download: false
+
+timezone: Europe/Berlin
