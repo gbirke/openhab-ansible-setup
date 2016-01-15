@@ -1,8 +1,8 @@
 ---
+# TODO Make install dependent on machine architecture: vagrant machine vs raspbian 
 - hosts: all
-  # TODO install role only on vagrant machine, on raspbian use apt
   roles: 
-    - williamyeh.oracle-java
+    - williamyeh.oracle-java # This is vagrant-specific
   vars:
     - java_version: 8
     - java_remove_download: false
@@ -16,5 +16,9 @@
         - vim
         - unzip
         - ntp
-    # TODO: Install nginx for proxying?
+        - samba
+    # TODO: set hostname
+    # TODO: Set timezone
+
+- include: tasks/install_influxdb_debian.yml
 

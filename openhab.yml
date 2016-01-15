@@ -6,14 +6,18 @@
     openhab_addons_dir: ~/openab_addons
     openhab_base_url: "https://bintray.com/artifact/download/openhab/bin"
     openhab_version: 1.8.0
+    openhab_jdbc_driver_jar: "http://central.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/1.3.4/mariadb-java-client-1.3.4.jar"
     openhab_runtime_file: distribution-{{ openhab_version }}-runtime.zip
     openhab_addons_file: distribution-{{ openhab_version }}-addons.zip
     openhab_install_addons:
       - binding.http
       - binding.ntp
+      - binding.networkhealth
       - persistence.exec
       - persistence.logging
       - persistence.rrd4j
+      - persistence.jdbc
+      - persistence.influxdb
   tasks:
     - name: Create download dir
       file: dest={{ openhab_download_dir }} state=directory
@@ -23,16 +27,25 @@
       file: dest={{ openhab_install_dir }} state=directory mode=755
     - name: Download openHAB runtime
       get_url: url={{ openhab_base_url }}/{{ openhab_runtime_file }} dest={{ openhab_download_dir }}/{{ openhab_runtime_file }}
+      register: openhab_runtime_dl_status
     - name: Download openHAB addons
       get_url: url={{ openhab_base_url }}/{{ openhab_addons_file }} dest={{ openhab_download_dir }}/{{ openhab_addons_file }}
+      register: openhab_addons_dl_status
     - name: Extract openHAB runtime
       unarchive: src={{ openhab_download_dir }}/{{ openhab_runtime_file }} dest={{ openhab_install_dir }} copy=no
+      when: openhab_runtime_dl_status.changed 
     - name: Extract openHAB addons
       unarchive: src={{ openhab_download_dir }}/{{ openhab_addons_file }} dest={{ openhab_addons_dir }} copy=no
+      when: openhab_addons_dl_status.changed 
     - name: Install addons
-      command: cp {{ openhab_addons_dir }}/org.openhab.{{item}}-{{openhab_version}}.jar {{ openhab_install_dir }}/addons/org.openhab.{{item}}-{{openhab_version}}.jar
+      command: cp -u {{ openhab_addons_dir }}/org.openhab.{{item}}-{{openhab_version}}.jar {{ openhab_install_dir }}/addons/org.openhab.{{item}}-{{openhab_version}}.jar creates={{ openhab_install_dir }}/addons/org.openhab.{{item}}-{{openhab_version}}.jar
       with_items: "{{ openhab_install_addons }}"
+    - name: Download JDBC driver for MariaDB
+      # TODO: When Ansible 2.0 is out, use the maven_artifact task instead
+      get_url: url={{ openhab_jdbc_driver_jar }} dest={{ openhab_install_dir }}/addons/{{ openhab_jdbc_driver_jar|basename }}
+    # TODO Create influxdb db and user, grant rights to it
     # TODO Create openHAB user
     # TODO Install startup item
     # TODO Clone openhab configuration Git repository
     # TODO openhab_install_addons contains binding.homematic, include homegear.yml
+    # TODO create ramsdisk for logging
