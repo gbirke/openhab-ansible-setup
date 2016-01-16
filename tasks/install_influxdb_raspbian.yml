@@ -1,6 +1,6 @@
 ---
 # This is based on the description at https://www.kuerbis.org/2015/03/influxdb-0-9-auf-dem-raspberry-pi-installieren/
-# It needs the first steps (download go, build influxdb already executed )
+# It needs the first steps (download go, build influxdb) already executed!!!
 - hosts: raspberry
   name: Install InfluxDB on Raspberry Pi
   become: true
@@ -21,8 +21,9 @@
     - name: Check influxdb code directory
       stat: path={{ influxdb_code }}
       register: influxdb_code_check
-    - name: Assert that influxdb is installed in go directory
-      assert: { that: influxdb_code_check.stat.exists }
+    - name: Fail if influxdb is not installed in the code directory
+      fail: msg=You need to compile influxdb first in {{ influxdb_code }}
+      when: influxdb_code_check.stat.exists == False
     - name: Create influxdb destination
       file: name={{ influxdb_home_dir }}/scripts state=directory
     - name: Copy binaries

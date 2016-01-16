@@ -14,7 +14,7 @@
         - ntp
         - samba
 
-- name: Install Java and Bluetooth stack on Raspberry
+- name: Set up Raspbian specific stuff
   hosts: raspberry
   become: true
   tasks:
@@ -24,7 +24,7 @@
       apt: pkg=bluez state=present
 
 
-- name: Install Java and set timezone on Vagrant Debian
+- name: Set up Vagrant Debian specific stuff
   hosts: vagrant
   become: true
   roles:
