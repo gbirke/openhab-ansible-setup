@@ -14,10 +14,17 @@
         - ntp
         - samba
 
+- name: Install Java and Bluetooth stack on Raspberry
+  hosts: raspberry
+  become: true
+  tasks:
+    - name: Install Java 8 JDK
+      apt: pkg=oracle-java8-jdk state=present
+    - name: Install Bluetooth
+      apt: pkg=bluez state=present
 
-# Here comes the Vagrant-Specific part
 
-- name: Install Java and set timezone
+- name: Install Java and set timezone on Vagrant Debian
   hosts: vagrant
   become: true
   roles:
@@ -26,5 +33,6 @@
     - name: Set timezone
       copy: dest=/etc/timezone content={{ timezone }}
 
+# Inlcuded playbook is also for Vagrant debian
 - include: tasks/install_influxdb_debian.yml
 

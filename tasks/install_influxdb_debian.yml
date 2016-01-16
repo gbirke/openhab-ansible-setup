@@ -1,6 +1,6 @@
 ---
 - hosts: vagrant
-  name: Install InfluxDB
+  name: Install InfluxDB on Vagrant Debian
   become: true
   vars: 
     influxdb_download_dir: /home/vagrant/downloads
