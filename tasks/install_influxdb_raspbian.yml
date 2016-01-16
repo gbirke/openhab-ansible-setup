@@ -1,0 +1,59 @@
+---
+# This is based on the description at https://www.kuerbis.org/2015/03/influxdb-0-9-auf-dem-raspberry-pi-installieren/
+# It needs the first steps (download go, build influxdb already executed )
+- hosts: raspberry
+  name: Install InfluxDB on Raspberry Pi
+  become: true
+  vars: 
+    influxdb_gocodez: /home/pi/gocodez
+    influxdb_code: "{{ influxdb_gocodez }}/src/github.com/influxdb/influxdb"
+    influxdb_home_base: /opt/influxdb
+    influxdb_etc_dir: /etc/influxdb
+    influxdb_version: 0.9.6 
+    influxdb_home_dir: "{{ influxdb_home_base }}/versions/{{ influxdb_version }}"
+    influxdb_binaries:
+        - influx
+        - influxd
+        - influx_inspect
+        - influx_tsm
+        - urlgen
+  tasks:
+    - name: Check influxdb code directory
+      stat: path={{ influxdb_code }}
+      register: influxdb_code_check
+    - name: Assert that influxdb is installed in go directory
+      assert: { that: influxdb_code_check.stat.exists }
+    - name: Create influxdb destination
+      file: name={{ influxdb_home_dir }}/scripts state=directory
+    - name: Copy binaries
+      command: cp {{ influxdb_gocodez }}/bin/{{ item }} {{ influxdb_home_dir }}/{{ item }} creates={{ influxdb_home_dir }}/{{ item }}
+      with_items: "{{ influxdb_binaries }}"
+    - name: Create etc dir
+      file: name={{ influxdb_etc_dir }} state=directory
+    - name: Copy config
+      copy: src=../files/config.sample.toml dest={{ influxdb_etc_dir }}/influxdb.conf mode=644
+    - name: Create group
+      group: name=influxdb state=present
+    - name: Create user
+      user: name=influxdb home=/home/influxdb group=influxdb shell=/bin/bash createhome=no
+    - name: Set permissions on home dir
+      file: name={{ influxdb_home_base }} state=directory owner=influxdb group=influxdb recurse=yes
+    - name: Link version binaries
+      file: src={{ influxdb_home_dir }}/{{ item }} name={{ influxdb_home_base }}/{{ item }} state=link
+      with_items: "{{ influxdb_binaries }}"
+    - name: Create lib dir
+      file: name=/var/lib/influxdb state=directory owner=influxdb group=influxdb mode=755
+    - name: Create log dir
+      file: name=/var/log/influxdb state=directory owner=influxdb group=influxdb mode=755
+    - name: Copy logrotate script
+      command: cp {{ influxdb_code }}/scripts/logrotate /etc/logrotate.d/influxdb creates=/etc/logrotate.d/influxdb
+    - name: Copy service description
+      command: cp {{ influxdb_code }}/scripts/influxdb.service /lib/systemd/system/influxdb.service creates=/lib/systemd/system/influxdb.service
+    - name: Change binary in service description
+      lineinfile: dest=/lib/systemd/system/influxdb.service regexp=^ExecStart= line="ExecStart=/bin/sh -c \"{{ influxdb_home_dir }}/influxd -config /etc/influxdb/influxdb.conf ${INFLUXD_OPTS} >> ${STDOUT} 2>> ${STDERR}\""
+    - name: Add default file
+      file: name=/etc/default/influxdb state=file
+    - name: Enable service
+      service: name=influxdb enabled=yes  
+
+

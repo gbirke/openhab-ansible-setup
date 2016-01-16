@@ -7,7 +7,7 @@
     influxdb_package_name: influxdb
     influxdb_package_url: https://s3.amazonaws.com/influxdb/influxdb_0.9.6.1_amd64.deb
   tasks:
-    - name: Check if my_package is installed
+    - name: Check if influxdb package is already installed
       command: dpkg-query -W {{ influxdb_package_name }}
       register: influxdb_check_deb
       failed_when: influxdb_check_deb.rc > 1
