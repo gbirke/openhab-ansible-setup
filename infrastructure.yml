@@ -12,6 +12,7 @@
         - vim
         - unzip
         - ntp
+        - python-lxml
         - samba
 
 - name: Set up Raspbian specific stuff
@@ -22,6 +23,19 @@
       apt: pkg=oracle-java8-jdk state=present
     - name: Install Bluetooth
       apt: pkg=bluez state=present
+    - name: Create openhab group
+      group: name=openhab state=present
+    - name: Create openhab user and group
+      user: name={{ openhab_user }} groups=daemon pass=$6$SbFRSi9bFsAel$t50QiGOGwOA0aJ/0pd4PvyZGdfee13Sk21JBYULpXs5upobcyZQQVWBqW.uui7aFH1jL0vzd8nnRGiT5DPzlA. group=openhab state=present
+    - name: Security setting for SMB
+      ini_file: dest=/etc/samba/smb.conf section=global option=security value=user
+    - name: Add user permissions to SMB config settings
+      ini_file: dest=/etc/samba/smb.conf section=global option="encrypt passwords" value=yes
+      notify:
+        - restart SMB
+  handlers:
+    - name: restart SMB
+      service: name=smbd state=restarted
 
 
 - name: Set up Vagrant Debian specific stuff

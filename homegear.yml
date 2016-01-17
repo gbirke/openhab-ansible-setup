@@ -1,5 +1,6 @@
 ---
-- hosts: all  
+- hosts: all
+  become: true
   tasks:
     - name: Install homegear dependencies
       apt: pkg={{item}} state=present

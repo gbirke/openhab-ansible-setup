@@ -23,10 +23,12 @@ Example inventory file:
 
 [vagrant:vars]
 homegear_repo = "deb https://homegear.eu/packages/Debian/ jessie/"
+openhab_user = vagrant
 
 [raspberry]
 192.168.1.3 ansible_ssh_user=pi
 
 [raspberry:vars]
 homegear_repo = "deb https://homegear.eu/packages/Raspbian/ jessie/"
+openhab_user = openhab
 ```

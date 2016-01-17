@@ -1,5 +1,6 @@
 ---
 - hosts: all
+  become: true
   vars:
     openhab_install_dir: /opt/openhab
     openhab_download_dir: ~/downloads
@@ -10,15 +11,18 @@
     openhab_runtime_file: distribution-{{ openhab_version }}-runtime.zip
     openhab_addons_file: distribution-{{ openhab_version }}-addons.zip
     openhab_install_addons:
+      - binding.homematic
       - binding.http
       - binding.ntp
       - binding.networkhealth
       - binding.fritzboxtr064
+      - io.myopenhab
       - persistence.exec
       - persistence.logging
       - persistence.rrd4j
       - persistence.jdbc
       - persistence.influxdb
+    openhab_share_config: True
   tasks:
     - name: Create download dir
       file: dest={{ openhab_download_dir }} state=directory
@@ -26,6 +30,7 @@
       file: dest={{ openhab_addons_dir }} state=directory
     - name: Create openHAB dir
       file: dest={{ openhab_install_dir }} state=directory mode=755
+      become: true
     - name: Download openHAB runtime
       get_url: url={{ openhab_base_url }}/{{ openhab_runtime_file }} dest={{ openhab_download_dir }}/{{ openhab_runtime_file }}
       register: openhab_runtime_dl_status
@@ -45,9 +50,39 @@
       with_items: "{{ openhab_install_addons }}"
     - name: Download JDBC driver for MariaDB
       maven_artifact: group_id=mysql artifact_id=mysql-connector-java version=5.1.38 dest={{ openhab_install_dir }}/addons
-    # TODO Create influxdb db and user, grant rights to it
-    # TODO Create openHAB user
+    - name: Create start script for service
+      copy: src=files/start_service.sh dest={{ openhab_install_dir }}/start_service.sh mode=755
+    # TODO load my.openhab addon
+    - name: Set permissions on openhab files
+      file: name={{ openhab_install_dir }} owner={{ openhab_user }} recurse=yes
+
+    - name: Copy service description
+      copy: src=files/openhab.service dest=/lib/systemd/system/openhab.service
+
+    # Share openhab config as SMD drive (for testing and setting up)
+    - name: Add directory to SMB config settings
+      ini_file: dest=/etc/samba/smb.conf section=openhab_cfg option="  path" value={{ openhab_install_dir }}/configurations
+      when: openhab_share_config
+    - name: Add user permissions to SMB config settings
+      ini_file: dest=/etc/samba/smb.conf section=openhab_cfg option="  valid users" value={{ openhab_user }}
+      when: openhab_share_config
+    - name: Set SMB config for settings dir as writable
+      ini_file: dest=/etc/samba/smb.conf section=openhab_cfg option="  read only" value=no
+      when: openhab_share_config
+    - name: Set SMB config for disallowing Mac OS X metadata files
+      ini_file: dest=/etc/samba/smb.conf section=openhab_cfg option="  veto files" value="/._*/.DS_Store/"
+      when: openhab_share_config
+    - name: Set SMB config for for removing Mac OS X metadata files
+      ini_file: dest=/etc/samba/smb.conf section=openhab_cfg option="  delete veto files" value=yes
+      when: openhab_share_config
+      notify:
+        - restart SMB
+
+  handlers:
+    - name: restart SMB
+      service: name=smbd state=restarted
+
     # TODO Install startup item
     # TODO Clone openhab configuration Git repository
-    # TODO openhab_install_addons contains binding.homematic, include homegear.yml
+    # TODO if openhab_install_addons contains binding.homematic, include homegear.yml
     # TODO create ramsdisk for logging
