@@ -1,5 +1,7 @@
 [Unit]
 Description=Open Home Automation Bus
+Requires=influxdb.service
+After=influxdb.service
 
 [Service]
 Type=forking
@@ -10,6 +12,10 @@ ExecStopPost=
 User=openhab
 Group=daemon
 WorkingDirectory=/opt/openhab
+Restart=on-failure
+RestartSec=3m
+OnFailure=unit-status-mail@%n.service
+
 
 [Install]
 WantedBy=multi-user.target

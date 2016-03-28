@@ -51,11 +51,14 @@
     - name: Download JDBC driver for MariaDB
       maven_artifact: group_id=mysql artifact_id=mysql-connector-java version=5.1.38 dest={{ openhab_install_dir }}/addons
     - name: Create start script for service
-      copy: src=files/start_service.sh dest={{ openhab_install_dir }}/start_service.sh mode=755
-    # TODO load my.openhab addon
+      copy: src=files/start_service.sh dest={{ openhab_install_dir }}/start_service.sh mode=755 owner={{ openhab_user }}
     - name: Set permissions on openhab files
       file: name={{ openhab_install_dir }} owner={{ openhab_user }} recurse=yes
 
+    - name: Copy unit mailer script
+      copy: src=files/unit-status-mail.sh dest=/usr/bin/unit-status-mail.sh mode=655
+    - name: Copy mailer servicer description
+      copy: src=files/unit-status-mail.service dest=/lib/systemd/system/unit-status-mail@.service #yes, @. is right
     - name: Copy service description
       copy: src=files/openhab.service dest=/lib/systemd/system/openhab.service
 
@@ -82,7 +85,6 @@
     - name: restart SMB
       service: name=smbd state=restarted
 
-    # TODO Install startup item
     # TODO Clone openhab configuration Git repository
     # TODO if openhab_install_addons contains binding.homematic, include homegear.yml
     # TODO create ramsdisk for logging

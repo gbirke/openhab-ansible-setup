@@ -9,11 +9,12 @@
       apt: pkg={{item}} state=installed
       with_items:
         - git
-        - vim
-        - unzip
         - ntp
         - python-lxml
         - samba
+        - ssmtp
+        - unzip
+        - vim
 
 - name: Set up Raspbian specific stuff
   hosts: raspberry
