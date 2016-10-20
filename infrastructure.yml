@@ -8,7 +8,9 @@
     - name: Install packages
       apt: pkg={{item}} state=installed
       with_items:
+        - apt-transport-https
         - git
+        - lsof
         - ntp
         - python-lxml
         - samba
@@ -49,5 +51,4 @@
       copy: dest=/etc/timezone content={{ timezone }}
 
 # Inlcuded playbook is also for Vagrant debian
-- include: tasks/install_influxdb_debian.yml
-
+#- include: tasks/install_influxdb_debian.yml

@@ -19,7 +19,7 @@ Example inventory file:
 
 ```
 [vagrant]
-192.168.1.2 ansible_ssh_user=vagrant 
+192.168.1.2 ansible_ssh_user=vagrant
 
 [vagrant:vars]
 homegear_repo = "deb https://homegear.eu/packages/Debian/ jessie/"

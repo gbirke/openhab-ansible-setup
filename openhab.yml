@@ -39,7 +39,7 @@
       register: openhab_addons_dl_status
     - name: Extract openHAB runtime
       unarchive: src={{ openhab_download_dir }}/{{ openhab_runtime_file }} dest={{ openhab_install_dir }} copy=no
-      when: openhab_runtime_dl_status.changed 
+      when: openhab_runtime_dl_status.changed
     - name: Extract openHAB addons
       unarchive: src={{ openhab_download_dir }}/{{ openhab_addons_file }} dest={{ openhab_addons_dir }} copy=no
       when: openhab_addons_dl_status.changed
@@ -62,7 +62,7 @@
     - name: Copy service description
       copy: src=files/openhab.service dest=/lib/systemd/system/openhab.service
 
-    # Share openhab config as SMD drive (for testing and setting up)
+    # Share openhab config as SMB drive (for testing and setting up)
     - name: Add directory to SMB config settings
       ini_file: dest=/etc/samba/smb.conf section=openhab_cfg option="  path" value={{ openhab_install_dir }}/configurations
       when: openhab_share_config
@@ -87,4 +87,4 @@
 
     # TODO Clone openhab configuration Git repository
     # TODO if openhab_install_addons contains binding.homematic, include homegear.yml
-    # TODO create ramsdisk for logging
+    # TODO create ramdisk for logging
