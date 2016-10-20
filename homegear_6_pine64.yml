@@ -1,0 +1,28 @@
+---
+- hosts: all
+  tasks:
+    - name: Add homegear repo key
+      apt_key: url=https://homegear.eu/packages/Release.key state=present
+    - name: add homegear repo
+      apt_repository: "repo='{{ homegear_repo }}' state=present"
+    #- name: Install homegear
+    #  apt: pkg=homegear update_cache=yes
+
+    # At the moment arm64 has only snapshots, so we would do the following steps
+    # instead of using apt.
+    # wget https://homegear.eu/downloads/nightlies/libhomegear-base_current_debian_jessie_arm64.deb
+    # wget https://homegear.eu/downloads/nightlies/homegear_current_debian_jessie_arm64.deb
+    # wget https://homegear.eu/downloads/nightlies/homegear-homematicbidcos_current_debian_jessie_arm64.deb
+    # dpkg -i  libhomegear-base_current_debian_jessie_arm64.deb
+    # dpkg -i  homegear_current_debian_jessie_arm64.deb
+    # dpkg -i homegear-homematicbidcos_current_debian_jessie_arm64.deb
+    # ​apt -f install
+
+    # TODO put AES key in vault instead of whole file, use template
+    - name: Copy configuration
+      copy:
+        src: files/homegear/homematicbidcos.conf
+        dest: /etc/homegear/families/homematicbidcos.conf
+        mode: 0644
+
+    # TODO ensure service is started
