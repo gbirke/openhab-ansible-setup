@@ -1,0 +1,45 @@
+---
+- hosts: all
+  become: true
+  vars:
+  tasks:
+    # See http://docs.openhab.org/installation/linux.html#package-repository-installation
+    - name: Add OpenHAB 2 beta repo
+      apt_repository: repo='deb http://dl.bintray.com/openhab/apt-repo2 testing main' state=present
+
+    - name: Add OpenHAB 2 beta key
+      apt_key: url=https://bintray.com/user/downloadSubjectPublicKey?username=openhab
+
+    - name: Update sources
+      apt: update_cache=yes cache_valid_time=86400
+
+    - name: Install OpenHAB 2
+      apt: name=openhab2-offline
+
+    # TODO enable when Ansible2.2 is available
+    #- name: Start and enable OpenHAB 2
+    #  systemd: name=openhab2 state=started enabled=yes
+
+    - name: Add SMD shahres for config
+      blockinfile:
+        dest: /etc/samba/smb.conf
+        block: |
+          [openHAB2-userdata]
+            comment=openHAB2 userdata
+            path=/var/lib/openhab2
+            browseable=Yes
+            writeable=Yes
+            only guest=no
+            public=no
+            create mask=0777
+            directory mask=0777
+
+          [openHAB2-conf]
+            comment=openHAB2 site configuration
+            path=/etc/openhab2
+            browseable=Yes
+            writeable=Yes
+            only guest=no
+            public=no
+            create mask=0777
+            directory mask=0777

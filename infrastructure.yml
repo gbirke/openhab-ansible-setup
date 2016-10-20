@@ -40,6 +40,29 @@
     - name: restart SMB
       service: name=smbd state=restarted
 
+- name: Set up Pine64 specific stuff
+  hosts: pine64
+  become: true
+  tasks:
+    # Installing Oracle Java is a pain in butt, can't automate the version and download properly
+    # See http://brabraen.blogspot.de/2016/04/pine64-install-oracle-jdk-8.html for manual instructions
+    - name: Install Bluetooth
+      apt: pkg=bluez state=present
+    - name: Create openhab group
+      group: name=openhab state=present
+    - name: Create openhab user and group
+      user: name={{ openhab_user }} groups=daemon password=$6$SbFRSi9bFsAel$t50QiGOGwOA0aJ/0pd4PvyZGdfee13Sk21JBYULpXs5upobcyZQQVWBqW.uui7aFH1jL0vzd8nnRGiT5DPzlA. group=openhab state=present
+    - name: Security setting for SMB
+      ini_file: dest=/etc/samba/smb.conf section=global option=security value=user
+    - name: Add user permissions to SMB config settings
+      ini_file: dest=/etc/samba/smb.conf section=global option="encrypt passwords" value=yes
+      notify:
+        - restart SMB
+  handlers:
+    - name: restart SMB
+      service: name=smbd state=restarted
+
+
 
 - name: Set up Vagrant Debian specific stuff
   hosts: vagrant

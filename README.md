@@ -6,6 +6,7 @@ Ansible playbooks for setting up OpenHAB and its dependencies on Debian/Raspbian
 
 - `infrastructure.yml` - Basic server setup, install necessary packages and Oracle Java
 - `openhab.yml` - Install OpenHAB. This playbook is very much tailored to my home setup and not very modular!
+- `openhab2.yml` - Install OpenHAB 2. This playbook is very much tailored to my home setup and not very modular!
 - `homegear.yml` - Install [homegear](https://www.homegear.eu/) service, needed for integrating HomeMatic/ELV MAX devices. This is still experimental!
 
 ## Inventories
